@@ -6,7 +6,7 @@ def something_changed(response):
     print(response.event_type)
     print(response.data)
 
-cred = credentials.Certificate("C:/Users/Nandi/zene/school/info/firebase/asd1-2088b-firebase-adminsdk-86y24-da4df843ef.json")
+cred = credentials.Certificate("C:/Users/22NDobo.ACC/CS/microbit/microbit-firebase/asd1-2088b-firebase-adminsdk-86y24-ffb7c7f69c.json")
 firebase_admin.initialize_app(cred,{"databaseURL": "https://asd1-2088b-default-rtdb.europe-west1.firebasedatabase.app"})
 
 ref = db.reference().child("temperature_log")
