@@ -8,12 +8,12 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://project-efc51-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
-ref = db.reference("/")
+ref = db.reference("/user")
 
 #write
-# ref.child("user").set({
-#     "resttime" : 40
-#     })
+ref.child("rest_time").set(40)
+ref.child("sport_time").set(40)
+ref.child("small_rest_preference").set(0.8)
 
 #Read
 # ref = db.reference('/user/resttime')
@@ -30,18 +30,27 @@ def rtime():
 remaining = rtime()
 print(remaining)
 
-def basetimes()
+def basetimes(remaining):
+    times = {}
     ref = db.reference('/user/rest_time')
-    rest_time = ref.get()
+    times["rest_time"] = int(ref.get())
+    remaining -= times["rest_time"]
+    
     ref = db.reference('/user/sport_time')
-    sport_time = ref.get()
-    ref = db.reference('/user/small_rest_preference')
-    small_rest_preference = ref.get()
-    remaining -= rest_time 
-    remaining -= sport_time
-    small_rest = small_rest_preference*remaining
-    remaining -= small_rest
-    study_time = remaining
+    times["sport_time"] = int(ref.get())
+    remaining -= times["sport_time"]
+    
+    ref = db.reference('/user/small_rest_preference') 
+    times["small_rest"] = int(ref.get()*remaining)-1
+    remaining -= times["small_rest"]
+    
+    times["study_time"] = remaining
+    return times
+times = {}
+times.update(basetimes(remaining))
+print(times)
+
+def timer():
 
 
 
