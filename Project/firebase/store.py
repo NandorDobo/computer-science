@@ -2,7 +2,33 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 from datetime import datetime
+import serial
+from serial.tools.list_ports import comports
 
+PID_MICROBIT = 516
+VID_MICROBIT = 3368
+TIMEOUT = 0.1
+ 
+def find_comport(pid, vid, baud):
+    #list_ports = serial.tools.list_ports.comports()
+    ''' return a serial port '''
+    ser_port = serial.Serial(timeout=TIMEOUT)
+    ser_port.baudrate = baud
+    ports = serial.tools.list_ports.comports()
+    print('scanning ports')
+    for p in ports:
+        if (p.pid == pid) and (p.vid == vid):
+            print('found target device pid: {} vid: {} port: {}'.format(p.pid, p.vid, p.device))
+            ser_port.port = str(p.device)
+            return ser_port
+    return None
+ 
+ser = find_comport(PID_MICROBIT, VID_MICROBIT, 115200)
+if not ser:
+    print('microbit not found')
+else:    
+    ser.open()
+    
 cred = credentials.Certificate("C:/Users/22NDobo.ACC/info/Project/firebase/project-efc51-firebase-adminsdk-zp4rw-d8b40054e4.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://project-efc51-default-rtdb.europe-west1.firebasedatabase.app'
@@ -46,11 +72,13 @@ def basetimes(remaining):
     
     times["study_time"] = remaining
     return times
+
+ser.write("120,".encode("utf-8"))
+
+
 times = {}
 times.update(basetimes(remaining))
 print(times)
-
-def timer():
 
 
 
