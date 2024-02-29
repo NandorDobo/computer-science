@@ -35,12 +35,10 @@ firebase_admin.initialize_app(cred, {
 })
 
 ref = db.reference("/user")
-
-#write
-ref.child("rest_time").set(40)
-ref.child("sport_time").set(40)
 ref.child("small_rest_preference").set(0.8)
-
+ref = db.reference("/user/times")
+ref.child("sport_time").set(0.8)
+ref.child("small_rest_preference").set(0.8)
 #Read
 # ref = db.reference('/user/resttime')
 # snapshot = ref.get()
@@ -58,11 +56,11 @@ print(remaining)
 
 def basetimes(remaining):
     times = {}
-    ref = db.reference('/user/rest_time')
+    ref = db.reference('/user/times/rest_time')
     times["rest_time"] = int(ref.get())
-    remaining -= times["rest_time"]
+    remaining -= times["study_time"]
     
-    ref = db.reference('/user/sport_time')
+    ref = db.reference('/user/times/sport_time')
     times["sport_time"] = int(ref.get())
     remaining -= times["sport_time"]
     
@@ -70,15 +68,34 @@ def basetimes(remaining):
     times["small_rest"] = int(ref.get()*remaining)-1
     remaining -= times["small_rest"]
     
-    times["study_time"] = remaining
-    return times
-
-ser.write("120,".encode("utf-8"))
-
-
+    ref = db.reference('/user/times') 
+    ref.child("smal_rest_time").set(times["small_rest"])
+    
+    times["rest_time"] = remaining
+    ref.child("study_time").set(times["study_time"])
+    return times 
 times = {}
 times.update(basetimes(remaining))
 print(times)
+
+def start(times):
+    name = input("What is your username?")
+    print("What do you want to do first?")
+    prev = input("study,phisical activity,rest")
+    
+    ref = db.reference('/' +name+ "/" +prev+ "_time")
+    task_time = ref.get()
+    print(task_time)
+    return prev
+    ser.write(str(task_time)+",".encode("utf-8"))
+prev = start(times)
+# def decide_next(prev,times):
+#     
+#     
+
+
+
+ser.write("120,".encode("utf-8"))
 
 
 
