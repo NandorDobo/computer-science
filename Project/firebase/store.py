@@ -35,10 +35,13 @@ firebase_admin.initialize_app(cred, {
 })
 
 ref = db.reference("/user")
-ref.child("small_rest_preference").set(0.8)
+ref.child("small_rest_preference").set(10)
+ref = db.reference("/user/preferences")
+ref.child("study_time").set(20)
+ref.child("sport_time").set(20)
 ref = db.reference("/user/times")
-ref.child("sport_time").set(0.8)
-ref.child("small_rest_preference").set(0.8)
+ref.child("study_time").set(40)
+ref.child("sport_time").set(40)
 #Read
 # ref = db.reference('/user/resttime')
 # snapshot = ref.get()
@@ -54,48 +57,64 @@ def rtime():
 remaining = rtime()
 print(remaining)
 
-def basetimes(remaining):
-    times = {}
-    ref = db.reference('/user/times/rest_time')
-    times["rest_time"] = int(ref.get())
-    remaining -= times["study_time"]
+def today_times(remaining):
+    remaining_time = 0
+    ref = db.reference('/user/times/study_time')
+    study_time = int(ref.get())
+    remaining -= study_time
+    ref = db.reference('/user/remaining_times')
+    ref.child("study_time").set(study_time)
     
     ref = db.reference('/user/times/sport_time')
     times["sport_time"] = int(ref.get())
     remaining -= times["sport_time"]
+    ref = db.reference('/user/remaining_times')
+    ref.child("sport_time").set(times["sport_time"])
     
-    ref = db.reference('/user/small_rest_preference') 
-    times["small_rest"] = int(ref.get()*remaining)-1
-    remaining -= times["small_rest"]
     
-    ref = db.reference('/user/times') 
-    ref.child("smal_rest_time").set(times["small_rest"])
-    
+    ref = db.reference('/user/times')
     times["rest_time"] = remaining
-    ref.child("study_time").set(times["study_time"])
+
     return times 
 times = {}
-times.update(basetimes(remaining))
+times.update(today_times(remaining))
 print(times)
 
 def start(times):
     name = input("What is your username?")
     print("What do you want to do first?")
     prev = input("study,phisical activity,rest")
+    working_values = {}
+    working_values["name"] = name
+    working_values["prev"] = prev
+    return working_values
+working_values = start(times)
+
+# def next_task(prev,times):
     
-    ref = db.reference('/' +name+ "/" +prev+ "_time")
+    
+    
+    
+def send(working_values,times):
+    if(working_values["prev"] == "rest"):
+        ref = db.reference('/' +working_values["name"]+ "/small_rest_preference")
+        
+    else:
+        ref = db.reference('/' +working_values["name"]+ "/times/" +working_values["prev"]+ "_time")
+        
     task_time = ref.get()
     print(task_time)
-    return prev
-    ser.write(str(task_time)+",".encode("utf-8"))
-prev = start(times)
-# def decide_next(prev,times):
-#     
-#     
+    ser.write((str(task_time*60)+",").encode("utf-8"))
+send(working_values,times)
+# def receive
+    
+    
+
+    
 
 
 
-ser.write("120,".encode("utf-8"))
+# ser.write("120,".encode("utf-8"))
 
 
 
