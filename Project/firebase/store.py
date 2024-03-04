@@ -90,7 +90,6 @@ def start(times):
     return working_values
 working_values = start(times)
 
-# def next_task(prev,times):
     
     
     
@@ -104,12 +103,18 @@ def send(working_values,times):
         
     task_time = ref.get()
     print(task_time)
-    ser.write((str(task_time*60)+",").encode("utf-8"))
+    ser.write((str(task_time)+",").encode("utf-8"))
 send(working_values,times)
-# def receive
-    
-    
 
+def receive():
+    while True:
+        rec = ser.readline().decode('utf-8').strip()
+        if (rec != ""):
+            break
+        
+    received_values = rec.split(",")
+    return received_values
+print(receive())
     
 
 
