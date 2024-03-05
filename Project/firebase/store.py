@@ -101,22 +101,21 @@ def send(working_values):
     ser.write((str(task_time)+",").encode("utf-8"))
     return(task_time)
 
-def receive():
+def validation(task_time):
     while True:
         rec = ser.readline().decode('utf-8').strip()
         if (rec != ""):
-            if(len(rec) == 4 or len(rec) == 3):
+            if(len(rec) == 4 or len(rec) == 3) and (rec[-1] == "0" or rec[-1] == "1") and (rec[1] == "," or  rec[2] == ","):
                 received_values = rec.split(",")
-                ser.write((str(1)+",").encode("utf-8"))
+                ser.write((str(2)+",").encode("utf-8"))
                 break
-            
-            
-    
+            else:
+                ser.write((str(1)+",").encode("utf-8"))
     print(received_values)
     return received_values
 
 def update(working_values,date,task_time):
-    rec = receive()
+    rec = validation()
     date = datetime.today().date().isoformat()
     print(task_time)
     
