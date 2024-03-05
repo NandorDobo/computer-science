@@ -54,69 +54,93 @@ def rtime():
     minutes = now.minute
     remaining = (22-hour)*60-minutes
     return remaining
-remaining = rtime()
-print(remaining)
 
-def today_times(remaining):
-    remaining_time = 0
-    ref = db.reference('/user/times/study_time')
+
+def today_times(remaining,date):
+    ref = db.reference("/user/times/study_time")
     study_time = int(ref.get())
     remaining -= study_time
-    ref = db.reference('/user/remaining_times')
+    ref = db.reference("/user/days/"+date+"/remaining_times")
     ref.child("study_time").set(study_time)
     
+    
     ref = db.reference('/user/times/sport_time')
-    times["sport_time"] = int(ref.get())
-    remaining -= times["sport_time"]
-    ref = db.reference('/user/remaining_times')
-    ref.child("sport_time").set(times["sport_time"])
+    sport_time = int(ref.get())
+    remaining -= sport_time
+    ref = db.reference("/user/days/"+date+"/remaining_times")
+    ref.child("sport_time").set(sport_time)
     
     
     ref = db.reference('/user/times')
-    times["rest_time"] = remaining
+    rest_time = remaining
 
-    return times 
-times = {}
-times.update(today_times(remaining))
-print(times)
+    return rest_time
 
-def start(times):
+
+
+def start():
     name = input("What is your username?")
     print("What do you want to do first?")
     prev = input("study,phisical activity,rest")
     working_values = {}
     working_values["name"] = name
+    working_values["first"] = prev
     working_values["prev"] = prev
     return working_values
-working_values = start(times)
 
-    
-    
-    
-    
-def send(working_values,times):
+
+def send(working_values):
     if(working_values["prev"] == "rest"):
         ref = db.reference('/' +working_values["name"]+ "/small_rest_preference")
         
     else:
-        ref = db.reference('/' +working_values["name"]+ "/times/" +working_values["prev"]+ "_time")
+        ref = db.reference('/' +working_values["name"]+ "/preferences/" +working_values["prev"]+ "_time")
         
     task_time = ref.get()
     print(task_time)
     ser.write((str(task_time)+",").encode("utf-8"))
-send(working_values,times)
+    return(task_time)
 
 def receive():
     while True:
         rec = ser.readline().decode('utf-8').strip()
         if (rec != ""):
-            break
-        
-    received_values = rec.split(",")
-    return received_values
-print(receive())
+            if(len(rec) == 4 or len(rec) == 3):
+                received_values = rec.split(",")
+                ser.write((str(1)+",").encode("utf-8"))
+                break
+            
+            
     
+    print(received_values)
+    return received_values
 
+def update(working_values,date,task_time):
+    rec = receive()
+    date = datetime.today().date().isoformat()
+    print(task_time)
+    
+    ref = db.reference("/user/days/"+date+"/remaining_times/"+working_values["prev"]+ "_time")
+    time = ref.get() - (task_time - int(rec[0]))
+    print(time)
+    ref = db.reference("/user/days/"+date+"/remaining_times/")
+    ref.child(working_values["prev"] + "_time").set(time)
+
+
+def main():
+    date = datetime.today().date().isoformat()
+    remaining = rtime()
+    print(remaining)
+    
+    rest_time = today_times(remaining,date)
+    print(rest_time)
+    
+    working_values = start()
+    task_time = send(working_values)
+    update(working_values,date,task_time)
+main()
+
+# def end()
 
 
 # ser.write("120,".encode("utf-8"))
