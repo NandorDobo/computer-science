@@ -175,7 +175,7 @@ def recommend(working_values,date):
     if(working_values["previous_activity"] == "sport"):
         recommend = "rest"
     elif(working_values["previous_activity"] == "study"):
-        ref = db.reference("/" +working["name"]+"/days/"+date+"/remaining_times/"+"sport_time")
+        ref = db.reference("/" +working_values["name"]+"/days/"+date+"/remaining_times/"+"sport_time")
         if(ref.get() != 0):
             recommend = "sport"
         else:
@@ -220,12 +220,12 @@ def weekday(date,working_values):
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("day_of_week").set(day_of_week)
 
-def end(working_values):
+def end(working_values,date):
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/fails")
     fails = ref.get()
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/start")
-    start  = re.get()
+    start  = ref.get()
     
     ref = db.reference("/" +working_values["name"]+ "/fails_avarage/"+start)
     times = ref.get()
@@ -234,7 +234,7 @@ def end(working_values):
     
     new_avarage = ((avarage*times)+fails)/(times+1)
     ref = db.reference("/" +working_values["name"]+ "/fails_avarage")
-    ref.child(start).set(start)
+    ref.child(start).set(times+1)
     ref.child(start + "_avarage").set(new_avarage)
     
 def main():
@@ -266,7 +266,7 @@ def main():
             print("It is time to go to bed get ready for it. Good Night")
             break
     
-    end(working_values)
+    end(working_values,date)
 main()
 
 # def end()

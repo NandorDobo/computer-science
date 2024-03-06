@@ -8,17 +8,31 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://project-efc51-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
+working_values = {}
+working_values["name"] = input("What is your name")
+
 fig, ax = plt.subplots()
 
-fruits = ['apple', 'blueberry', 'cherry', 'orange']
-counts = [40, 100, 30, 55]
-bar_labels = ['red', 'blue', '_red', 'orange']
-bar_colors = ['tab:red', 'tab:blue', 'tab:red', 'tab:orange']
+ref = db.reference("/" +working_values["name"]+ "/fails_avarage/study_avarage")
+study_avarage = ref.get()
+    
+ref = db.reference("/" +working_values["name"]+ "/fails_avarage/sport_avarage")
+sport_avarage = ref.get()
+    
+ref = db.reference("/" +working_values["name"]+ "/fails_avarage/rest_avarage")
+rest_avarage = ref.get()
 
-ax.bar(fruits, counts, label=bar_labels, color=bar_colors)
+
+
+starting = ['study', 'sport', 'rest']
+counts = [study_avarage,sport_avarage,rest_avarage]
+bar_labels = ["fails","fails","fails"]
+bar_colors = ['tab:red', 'tab:blue', 'tab:red']
+
+ax.bar(starting, counts, color=bar_colors)
 
 ax.set_ylabel('fruit supply')
 ax.set_title('Fruit supply by kind and color')
-ax.legend(title='Fruit color')
+# ax.legend(title='Fruit color')
 
 plt.show()
