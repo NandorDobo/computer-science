@@ -26,25 +26,20 @@ def find_comport(pid, vid, baud):
  
 ser = find_comport(PID_MICROBIT, VID_MICROBIT, 115200)
 if not ser:
-    print('microbit not found')
+    print('microbit not found, connect microbit to the computer and restart the program')
+    exit()
 else:    
     ser.open()
     
-cred = credentials.Certificate("C:/Users/Nandi/Downloads/project-efc51-firebase-adminsdk-zp4rw-d8b40054e4.json")
+cred = credentials.Certificate("C:/Users/22NDobo.ACC/info/Project/firebase/project-efc51-firebase-adminsdk-zp4rw-d8b40054e4.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://project-efc51-default-rtdb.europe-west1.firebasedatabase.app'
 })
 
-ref = db.reference("/user")
-ref.child("small_rest_preference").set(10)
-ref = db.reference("/user/preferences")
-ref.child("study_time").set(20)
-ref.child("sport_time").set(20)
-ref = db.reference("/user/times")
-ref.child("study_time").set(0)
-ref.child("sport_time").set(40)
+
+
 #Read
-# ref = db.reference('/user/resttime')
+# ref = db.reference('/" +working_values["name"]+ "/resttime')
 # snapshot = ref.get()
 # print(snapshot)
 
@@ -57,33 +52,78 @@ def rtime():
     return remaining
 
 
-def today_times(remaining,date):
-    ref = db.reference("/user/times/study_time")
+def today_times(remaining,date, working_values):
+    ref = db.reference("/" +working_values["name"]+ "/times/study_time")
     study_time = int(ref.get())
     remaining -= study_time
-    ref = db.reference("/user/days/"+date+"/remaining_times")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times")
     ref.child("study_time").set(study_time)
     
     
-    ref = db.reference('/user/times/sport_time')
+    ref = db.reference("/" +working_values["name"]+ "/times/sport_time")
     sport_time = int(ref.get())
     remaining -= sport_time
-    ref = db.reference("/user/days/"+date+"/remaining_times")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times")
     ref.child("sport_time").set(sport_time)
     
-    ref = db.reference("/user/days/"+date+"/remaining_times")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times")
     ref.child("rest_time").set(remaining)
 
     
+def setup(working_values):
+    ref = db.reference("/"+working_values["name"])
+                
+    sport_preference = input("How much sport do you do in one session")
+    ref = db.reference("/" +working_values["name"]+ "/preferences")
+    ref.child("sport_time").set(sport_preference)
+                
+    study_preference = input("How much study do you do in one session")
+    ref = db.reference("/" +working_values["name"]+ "/preferences")
+    ref.child("study_time").set(study_preference)                
+                
+    rest_preference = input("How much rest do you do after an activity")
+    ref = db.reference("/" +working_values["name"]+ "/preferences")
+    ref.child("rest_time").set(rest_preference)
+                
+    ref = db.reference("/" +working_values["name"]+ "/times")
+    ref.child("study_time").set(40)
+    ref.child("sport_time").set(40)
+    
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/")
+    ref.child("study").set(0)
+    ref.child("study_avarage").set(0)
+    ref.child("sport").set(0)
+    ref.child("sport_avarage").set(0)
+    ref.child("rest").set(0)
+    ref.child("rest_avarage").set(0)
+    
+
+
 
 def start(date):
-    name = input("What is your username?")
+    working_values = {}
+    while True:
+        new_or_not = input("Are you a new user?")
+        if (new_or_not == "yes"):
+            working_values["name"] = input("What is your name?")
+            ref = db.reference("/" +working_values["name"])
+            if ref.get():
+                print("The name already exist chose a new one or log into that one")
+            else:
+                setup(working_values)
+                break
+            
+        elif(new_or_not == "no"):
+            working_values["name"] = input("What is your name?")
+            ref = db.reference("/" +working_values["name"])
+            if ref.get():
+                break
+            else:
+                print("The name does not exists, try again if you misspelled or if you dont have an account create one")
     print("What do you want to do first?")
     previous_activity = input("study,sport,rest")
-    working_values = {}
-    working_values["name"] = name
     
-    ref = db.reference("/user/days/"+date+"/")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("start").set(previous_activity)
     
     working_values["previous_activity"] = previous_activity
@@ -106,7 +146,7 @@ def validation():
     while True:
         rec = ser.readline().decode('utf-8').strip()
         if (rec != ""):
-            if(len(rec) == 4 or len(rec) == 3) and (rec[-1] == "0" or rec[-1] == "1") and (rec[1] == "," or  rec[2] == ","):
+            if(rec[-1] == "0" or rec[-1] == "1") and (rec[1] == "," or  rec[2] == ",") and (rec[-2] == ","):
                 received_values = rec.split(",")
                 ser.write((str(2)+",").encode("utf-8"))
                 break
@@ -119,31 +159,31 @@ def update(working_values,date,task_time):
     rec = validation()
     print(task_time)
     
-    ref = db.reference("/user/days/"+date+"/remaining_times/"+working_values["previous_activity"]+ "_time")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/"+working_values["previous_activity"]+ "_time")
     time = ref.get() - (task_time - int(rec[0]))
     
     print(time)
-    ref = db.reference("/user/days/"+date+"/remaining_times/")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/")
     ref.child(working_values["previous_activity"] + "_time").set(time)
     
-    ref = db.reference("/user/days/"+date+"/fails/")
+    ref = db.reference("/" +working_values["name"]+"/days/"+date+"/fails/")
     fail = ref.get()
-    ref = db.reference("/user/days/"+date+"/")
-    ref.child("fails").set(fail + int(rec[1]))
+    ref = db.reference("/" +working_values["name"]+"/days/"+date+"/")
+    ref.child("fails").set(fail + int(rec[-1]))
     
 def recommend(working_values,date):
     if(working_values["previous_activity"] == "sport"):
         recommend = "rest"
     elif(working_values["previous_activity"] == "study"):
-        ref = db.reference("/user/days/"+date+"/remaining_times/"+"sport_time")
+        ref = db.reference("/" +working["name"]+"/days/"+date+"/remaining_times/"+"sport_time")
         if(ref.get() != 0):
             recommend = "sport"
         else:
             recommend = "rest"
     else:
-        ref = db.reference("/user/days/"+date+"/remaining_times/"+"study_time")
+        ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/"+"study_time")
         study_time = ref.get()
-        ref = db.reference("/user/days/"+date+"/remaining_times/"+"sport_time")
+        ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/"+"sport_time")
         sport_time = ref.get()
         if(study_time != 0):
             recommend = "study"
@@ -153,7 +193,7 @@ def recommend(working_values,date):
             recommend = "rest"
     return recommend
 
-def weekday(date):
+def weekday(date,working_values):
     date_parts = date.split("-")
     year = int(date_parts[0])
     month = int(date_parts[1])
@@ -177,23 +217,42 @@ def weekday(date):
     else:
         day_of_week = "sunday"
         
-    ref = db.reference("/user/days/"+date+"/")
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("day_of_week").set(day_of_week)
 
+def end(working_values):
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/fails")
+    fails = ref.get()
+    
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/start")
+    start  = re.get()
+    
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/"+start)
+    times = ref.get()
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/" +start+ "_avarage")
+    avarage = ref.get()
+    
+    new_avarage = ((avarage*times)+fails)/(times+1)
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage")
+    ref.child(start).set(start)
+    ref.child(start + "_avarage").set(new_avarage)
+    
 def main():
     date = datetime.today().date().isoformat()
+    working_values = start(date)
+    
     remaining = rtime()
     print(remaining)
-    ref = db.reference("/user/days/"+date+"/")
+    
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("fails").set(0)
     
-    weekday(date)
+    weekday(date,working_values)
     
-    rest_time = today_times(remaining,date)
+    rest_time = today_times(remaining,date,working_values)
     print(rest_time)
     
-    working_values = start(date)
-    task_time = send(working_values)
+    task_time = int(send(working_values))
     update(working_values,date,task_time)
     while True:
         recommended = recommend(working_values,date)
@@ -207,6 +266,7 @@ def main():
             print("It is time to go to bed get ready for it. Good Night")
             break
     
+    end(working_values)
 main()
 
 # def end()
