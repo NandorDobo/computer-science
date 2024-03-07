@@ -242,6 +242,7 @@ def weekday(date,working_values):
         
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("day_of_week").set(day_of_week)
+    return day_of_week
     
 def fails_avarage(working_values,date):
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/fails")
@@ -280,33 +281,28 @@ def done_time(working_values,date):
 
 
 def done_time_avarage(times_done, working_values,date,weekday):
-    get_path = lambda path : db.reference(path).get()
-    sport = get_path(f"/{working_values['name']}/times_avarage/{weekday}/sport")
-    sport_avarage = get_path(f"/{working_values['name']}/times_avarage/{weekday}/sport_avarage")
+    get_data = lambda path : db.reference(path).get()
     
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/"+weekday+"/study")
-    study = ref.get()
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/"+weekday+"/study_avarage")
-    study_avarage = ref.get()
     
+    sport = get_data(f"/{working_values['name']}/times_avarage/{weekday}/sport")
+    sport_avarage = get_data(f"/{working_values['name']}/times_avarage/{weekday}/sport_avarage")
+    
+    study = get_data(f"/{working_values['name']}/times_avarage/{weekday}/study")
+    study_avarage = get_data(f"/{working_values['name']}/times_avarage/{weekday}/study_avarage")
+    
+
     new_avarage = ((sport_avarage*sport)+times_done["sport"])/(sport+1)
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage")
-    ref.child(sport).set(sport+1)
+    ref = db.reference(f"/{working_values['name']}/times_avarage/{weekday}")
+    ref.child("sport").set(sport+1)
     ref.child("sport_avarage").set(new_avarage)
 
     
-    new_avarage = ((avarage*times)+fails)/(times+1)
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage")
-    ref.child(start).set(times+1)
-    ref.child(start + "_avarage").set(new_avarage)
+    new_avarage = ((study_avarage*study)+times_done["study"])/(study+1)
+    ref = db.reference(f"/{working_values['name']}/times_avarage/{weekday}")
+    ref.child("study").set(study+1)
+    ref.child("study_avarage").set(new_avarage)
     
-def end(working_values,date,weekday):
-    fails_avarage(working_values,date)
-    
-    times_done = done_time(working_values,date)
-    done_time_avarage(times_done,working_values,date,weekday)
-#     
-    
+
 def main():
     date = datetime.today().date().isoformat()
     working_values = start(date)
@@ -317,7 +313,7 @@ def main():
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("fails").set(0)
     
-    weekday1 = weekday(date,working_values)
+    weekday_value = weekday(date,working_values)
     
     rest_time = today_times(remaining,date,working_values)
     print(rest_time)
@@ -338,8 +334,14 @@ def main():
             print("It is time to go to bed get ready for it. Good Night")
             break
     
-    end(working_values,date,weekday)
-main()
+    fails_avarage(working_values,date)
+    
+    times_done = done_time(working_values,date)
+    done_time_avarage(times_done,working_values,date,weekday_value)
+
+
+if __name__ == '__main__':
+    main()
 
 # def end()
 
