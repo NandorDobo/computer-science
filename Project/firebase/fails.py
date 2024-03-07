@@ -31,8 +31,8 @@ bar_colors = ['tab:red', 'tab:blue', 'tab:red']
 
 ax.bar(starting, counts, color=bar_colors)
 
-ax.set_ylabel('fruit supply')
-ax.set_title('Fruit supply by kind and color')
+ax.set_ylabel('Avarage fails per day')
+ax.set_title('Avarage fail by starting activity')
 # ax.legend(title='Fruit color')
 
 plt.show()

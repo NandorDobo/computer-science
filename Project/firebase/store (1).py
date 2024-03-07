@@ -97,49 +97,14 @@ def setup(working_values):
     ref.child("rest").set(0)
     ref.child("rest_avarage").set(0)
     
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/monday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
+    weekday = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    for x in weekday:
+        ref = db.reference("/" +working_values["name"]+ "/times_avarage/"+x)
+        ref.child("study").set(0)
+        ref.child("study_avarage").set(0)
+        ref.child("sport").set(0)
+        ref.child("sport_avarage").set(0)
     
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/tuesday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-    
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/wednesday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-    
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/thursday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-    
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/friday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-    
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/saturday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-    
-    ref = db.reference("/" +working_values["name"]+ "/times_avarage/sunday")
-    ref.child("study").set(0)
-    ref.child("study_avarage").set(0)
-    ref.child("sport").set(0)
-    ref.child("sport_avarage").set(0)
-
-
 def start(date):
     working_values = {}
     while True:
@@ -305,7 +270,9 @@ def done_time_avarage(times_done, working_values,date,weekday):
 
 def main():
     date = datetime.today().date().isoformat()
+    
     working_values = start(date)
+    
     
     remaining = rtime()
     print(remaining)
