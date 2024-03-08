@@ -130,7 +130,7 @@ def start(date):
     weekday_value = weekday(date,working_values)
     
     if(input("Do you want to see your data graphed?") == "yes"):    
-    graph(working_values,date,weekday_value)
+        graph(working_values,date,weekday_value)
     
     if(input("Do you want to see predictions for your day?") == "yes"):
         what_if(working_values,date,weekday_value)
@@ -452,12 +452,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# def end()
-
-
-# ser.write("120,".encode("utf-8"))
-
 
 
 
