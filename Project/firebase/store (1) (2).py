@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
@@ -53,8 +55,7 @@ def rtime():
 
 
 def today_times(remaining,date, working_values):
-    ref = db.reference("/" +working_values["name"]+ "/times/study_time")
-    study_time = int(ref.get())
+    study_time = int(get_data(f"/{working_values['name']}/times/study_time"))
     remaining -= study_time
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times")
     ref.child("study_time").set(study_time)
@@ -73,15 +74,15 @@ def today_times(remaining,date, working_values):
 def setup(working_values):
     ref = db.reference("/"+working_values["name"])
                 
-    sport_preference = input("How much sport do you do in one session")
+    sport_preference = input("How much sport do you do in one session(minutes)")
     ref = db.reference("/" +working_values["name"]+ "/preferences")
     ref.child("sport_time").set(sport_preference)
                 
-    study_preference = input("How much study do you do in one session")
+    study_preference = input("How much study do you do in one session(minutes)")
     ref = db.reference("/" +working_values["name"]+ "/preferences")
     ref.child("study_time").set(study_preference)                
                 
-    rest_preference = input("How much rest do you do after an activity")
+    rest_preference = input("How much rest do you do after an activity(minutes)")
     ref = db.reference("/" +working_values["name"]+ "/preferences")
     ref.child("rest_time").set(rest_preference)
                 
@@ -128,8 +129,12 @@ def start(date):
                 
     weekday_value = weekday(date,working_values)
     
+    if(input("Do you want to see your data graphed?") == "yes"):    
+    graph(working_values,date,weekday_value)
+    
     if(input("Do you want to see predictions for your day?") == "yes"):
         what_if(working_values,date,weekday_value)
+        
     print("What do you want to do first?")
     previous_activity = input("study,sport,rest")
     
@@ -138,11 +143,124 @@ def start(date):
     
     working_values["previous_activity"] = previous_activity
     return working_values
+
+def graph(working_values,date,weekday_value):
+    if(input("Do you want to see the graph of your avarage fails?") == "yes"):
+        avarage_fails_graph(working_values,date,weekday_value)
+    if(input("Do you want to see the graph of your avarage times?") == "yes"):
+        avarage_times_graph(working_values,date,weekday_value)
+    if(input("Do you want to see the graph of your past fails?") == "yes"):
+        past_fails_graph(working_values,date,weekday_value)
+
+def avarage_fails_graph(working_values,date,weekday_value):
+    fig, ax = plt.subplots()
+
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/study_avarage")
+    study_avarage = ref.get()
+    
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/sport_avarage")
+    sport_avarage = ref.get()
+    
+    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/rest_avarage")
+    rest_avarage = ref.get()
+
+
+
+    starting = ['study', 'sport', 'rest']
+    counts = [study_avarage,sport_avarage,rest_avarage]
+    bar_labels = ["fails","fails","fails"]
+    bar_colors = ['tab:red', 'tab:blue', 'tab:red']
+
+    ax.bar(starting, counts, color=bar_colors)
+
+    ax.set_ylabel('Avarage fails per day')
+    ax.set_title('Avarage fail by starting activity')
+
+    plt.show()
+
+def avarage_times_graph(working_values,date,weekday_value):
+    get_data = lambda path: db.reference(path).get()
+    weekday = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    avarage = {}
+
+    for x in weekday:
+        avarage[x + "sport"] = get_data(f"/{working_values['name']}/times_avarage/{x}/sport")
+        avarage[x + "study"] = get_data(f"/{working_values['name']}/times_avarage/{x}/study")
+
+    print(avarage)
+
+    species = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+    sport_times = np.array([
+        avarage["mondaysport"],
+        avarage["tuesdaysport"],
+        avarage["wednesdaysport"],
+        avarage["thursdaysport"],
+        avarage["fridaysport"],
+        avarage["saturdaysport"],
+        avarage["sundaysport"]
+    ])
+
+    study_times = np.array([
+        avarage["mondaystudy"],
+        avarage["tuesdaystudy"],
+        avarage["wednesdaystudy"],
+        avarage["thursdaystudy"],
+        avarage["fridaystudy"],
+        avarage["saturdaystudy"],
+        avarage["sundaystudy"]
+    ])
+
+    width = 0.35
+    x = np.arange(len(species))
+
+    fig, ax = plt.subplots()
+
+    p1 = ax.bar(x, sport_times, width, label='Sport')
+    p2 = ax.bar(x, study_times, width, bottom=sport_times, label='Study')
+
+    ax.set_xlabel('Days of the week')
+    ax.set_ylabel('Average time')
+    ax.set_title('Average Time Spent on Sport and Study per Day')
+    ax.set_xticks(x)
+    ax.set_xticklabels(species)
+    ax.legend()
+
+    plt.show()
+
+def past_fails_graph(working_values,date,weekday_value):
+    
+    ref = db.reference(f"/{working_values['name']}/days")
+    data_key = "fails"
+    name_data_list = get_past_data(ref, data_key)
+
+    folder_names = list(name_data_list.keys())
+    data = [folder_data for folder_data in name_data_list.values()]
+    
+    
+    plt.bar(folder_names, data)
+    plt.xlabel('Days')
+    plt.ylabel('fails')
+    plt.title('Fails per day')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+    
+
+def get_past_data(ref, data_key):
+    name_data_list = {}
+    children = ref.get()
+    if children:
+        for key, value in children.items():
+            if isinstance(value, dict):
+                name_data_list[key] = value.get(data_key)
+    return name_data_list
+    
+
 def get_data(path):
     return db.reference(path).get()
     
 def what_if(working_values,date,weekday):
-    if(input("Do you want to see what is your predicted fail based on your previus date, if you start with a specific activity?") == "yes"):
+    if(input("Do you want to see what is your predicted fail based on your previus data, if you start with a specific activity?") == "yes"):
         activity = input("For wich activity would you like to see the prediction?(sport,study,rest)")
         
         print("Your predicted avarage fail for today starting with " +activity+ " Is: " + str(get_data(f"/{working_values['name']}/fails_avarage/{activity}_avarage")))
@@ -154,10 +272,11 @@ def what_if(working_values,date,weekday):
         avarage = get_data(f"/{working_values['name']}/times_avarage/{weekday}/{activity}_avarage")
         ideal = get_data(f"/{working_values['name']}/times/{activity}_time")
         if avarage < ideal:
-            print("Yes that would improve your health")
+            print(f"Yes, the model indicates that doing more {activity} would improve your health")
         else:
-            print("You dont need to do more of that, you should be able have a balanced life if you do the usual amout")
-    
+            print("You dont need to do more of that, you should be able have a balanced life if you do the usual amount ")
+    if(input("Do you want to check other things") == "yes"):
+        what_if(working_values,date,weekday)
     
 def send(working_values,date):
     if(working_values["previous_activity"] == "rest" and get_data(f"/{working_values['name']}/days/{date}/remaining_times/sport_time") == 0 and get_data(f"/{working_values['name']}/days/{date}/remaining_times/sport_time") == 0):
