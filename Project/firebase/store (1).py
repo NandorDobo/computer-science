@@ -31,7 +31,7 @@ if not ser:
 else:    
     ser.open()
     
-cred = credentials.Certificate("C:/Users/22NDobo.ACC/info/Project/firebase/project-efc51-firebase-adminsdk-zp4rw-d8b40054e4.json")
+cred = credentials.Certificate("C:/Users/22NDobo.ACC/Desktop/firebase/project-efc51-firebase-adminsdk-zp4rw-d8b40054e4.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://project-efc51-default-rtdb.europe-west1.firebasedatabase.app'
 })
@@ -125,6 +125,8 @@ def start(date):
                 break
             else:
                 print("The name does not exists, try again if you misspelled or if you dont have an account create one")
+    if(input("Do you want to see predictions for your day?") == "yes"):
+        what_if(working_values,date)
     print("What do you want to do first?")
     previous_activity = input("study,sport,rest")
     
@@ -133,8 +135,18 @@ def start(date):
     
     working_values["previous_activity"] = previous_activity
     return working_values
-
-
+def get_data(path):
+    return db.reference(path).get()
+    
+def what_if(working_values,date):
+    if(input("Do you want to see what is your predicted fail based on your previus date, if you start with a specific activity?") == "yes"):
+        activity = input("For wich activity would you like to see the prediction?(sport,study,rest)")
+        avarage =
+        
+    if(input("Do you want to see what if you did more of a specific activity, whether it would improve or not your health") == "yes"):
+    
+    
+    
 def send(working_values):
     ref = db.reference('/' +working_values["name"]+ "/preferences/" +working_values["previous_activity"]+ "_time") 
     task_time = ref.get()
