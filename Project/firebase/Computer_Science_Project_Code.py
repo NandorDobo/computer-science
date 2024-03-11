@@ -83,8 +83,8 @@ def setup(working_values):
     ref.child("rest_time").set(rest_preference)
                 
     ref = db.reference("/" +working_values["name"]+ "/times")
-    ref.child("study_time").set(0)
-    ref.child("sport_time").set(0)
+    ref.child("study_time").set(40)
+    ref.child("sport_time").set(40)
     
     ref = db.reference("/" +working_values["name"]+ "/fails_avarage/")
     ref.child("study").set(0)
@@ -130,9 +130,9 @@ def start(date):
     
     if(input("Do you want to see predictions for your day?") == "yes"):
         what_if(working_values,date,weekday_value)
-        
-    print("What do you want to do first?")
-    previous_activity = input("study,sport,rest")
+    while(working_values["previous_activity"] != ("sport" or "study" or "rest")):
+        print("What do you want to do first?")
+        previous_activity = input("study,sport,rest")
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("start").set(previous_activity)
@@ -419,7 +419,9 @@ def main():
     update(working_values,date,task_time)
     while True:
         recommended = recommend(working_values,date)
-        working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
+        while(working_values["previous_activity"] != ("sport" or "study" or "rest")):
+            working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
+
         if(working_values["previous_activity"] == "end"):
             break
 
