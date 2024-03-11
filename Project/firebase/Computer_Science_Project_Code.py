@@ -42,12 +42,6 @@ firebase_admin.initialize_app(cred, {
 
 
 
-#Read
-# ref = db.reference('/" +working_values["name"]+ "/resttime')
-# snapshot = ref.get()
-# print(snapshot)
-
-
 def rtime():
     now = datetime.now()
     hour = now.hour
@@ -188,8 +182,6 @@ def avarage_times_graph(working_values,date,weekday_value):
         avarage[x + "sport"] = get_data(f"/{working_values['name']}/times_avarage/{x}/sport")
         avarage[x + "study"] = get_data(f"/{working_values['name']}/times_avarage/{x}/study")
 
-    print(avarage)
-
     species = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
     sport_times = np.array([
         avarage["mondaysport"],
@@ -284,7 +276,6 @@ def send(working_values,date):
         task_time = get_data(f"/{working_values['name']}/days/{date}/remaining_times/rest_time")
     else:
         task_time = get_data(f"/{working_values['name']}/preferences/{working_values['previous_activity']}_time")
-    print(task_time)
     ser.write((str(task_time)+",").encode("utf-8"))
     return(task_time)
 
@@ -298,17 +289,14 @@ def validation():
                 break
             else:
                 ser.write((str(1)+",").encode("utf-8"))
-    print(received_values)
     return received_values
 
 def update(working_values,date,task_time):
     rec = validation()
-    print(task_time)
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/"+working_values["previous_activity"]+ "_time")
     time = int(ref.get()) - (int(task_time) - int(rec[0]))
     
-    print(time)
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/")
     ref.child(working_values["previous_activity"] + "_time").set(time)
     if(working_values["previous_activity"] != "rest"):
@@ -348,7 +336,6 @@ def weekday(date,working_values):
     day_of_week = given_date.weekday()
 
     day_of_week = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"][day_of_week]
-    print(day_of_week)
         
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("day_of_week").set(day_of_week)
@@ -420,7 +407,6 @@ def main():
     
     
     remaining = rtime()
-    print(remaining)
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("fails").set(0)
@@ -428,20 +414,19 @@ def main():
     weekday_value = weekday(date,working_values)
     
     rest_time = today_times(remaining,date,working_values)
-    print(rest_time)
     
     task_time = int(send(working_values,date))
     update(working_values,date,task_time)
     while True:
         recommended = recommend(working_values,date)
-        print("What do you want to do next?, I recommend "+recommended)
-        if(previous_activity == "end"):
+        working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
+        if(working_values["previous_activity"] == "end"):
             break
-        working_values["previous_activity"] = str(previous_activity)
+
         task_time = send(working_values,date)
         update(working_values,date,task_time)
 
-        if(remaining == 30):
+        if(remaining < 30):
             print("It is time to go to bed get ready for it. Good Night")
             break
     
