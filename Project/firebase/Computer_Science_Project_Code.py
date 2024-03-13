@@ -422,9 +422,10 @@ def main():
             print("It is time to go to bed get ready for it. Good Night")
             break
         recommended = recommend(working_values,date)
-        while(working_values["previous_activity"] != "sport" and working_values["previous_activity"] != "study" and working_values["previous_activity"] != "rest"):
-            working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
-
+        next_activity = str(input("What do you want to do next?, I recommend "+recommended))
+        while(next_activity != "sport" and working_values["previous_activity"] != "study" and working_values["previous_activity"] != "rest"):
+            next_activity = str(input("What do you want to do next?, I recommend "+recommended))
+        working_values["previous_activity"] = next_activity
         if(working_values["previous_activity"] == "end"):
             break
 
