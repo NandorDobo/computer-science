@@ -86,7 +86,7 @@ def setup(working_values):
     ref.child("study_time").set(40)
     ref.child("sport_time").set(40)
     
-    ref = db.reference("/" +working_values["name"]+ "/succes_avarage/")
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/")
     ref.child("study").set(0)
     ref.child("study_avarage").set(0)
     ref.child("sport").set(0)
@@ -125,7 +125,6 @@ def start(date):
                 print("The name does not exists, try again if you misspelled or if you dont have an account create one")
                 
     weekday_value = weekday(date,working_values)
-    print(weekday_value)
     if(input("Do you want to see your data graphed?") == "yes"):    
         graph(working_values,date,weekday_value)
     
@@ -228,15 +227,16 @@ def past_success_graph(working_values,date,weekday_value):
 
     folder_names = list(name_data_list.keys())
     data = [folder_data for folder_data in name_data_list.values()]
-    
-    
-    plt.bar(folder_names, data)
-    plt.xlabel('Days')
-    plt.ylabel('success')
-    plt.title('success per day')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
-    plt.show()
+    if(data == [None]):
+        print("there is no previous data")
+    else:
+        plt.bar(folder_names, data)
+        plt.xlabel('Days')
+        plt.ylabel('success')
+        plt.title('success per day')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.show()
     
 
 def get_past_data(ref, data_key):
@@ -402,7 +402,6 @@ def done_time_avarage(times_done, working_values,date,weekday):
 
 def main():
     date = datetime.today().date().isoformat()
-    print(date)
     working_values = start(date)
     
     
