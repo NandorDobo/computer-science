@@ -104,6 +104,7 @@ def setup(working_values):
     
 def start(date):
     working_values = {}
+    working_values["previous_activity"] = ""
     while True:
         new_or_not = input("Are you a new user?")
         if (new_or_not.lower() in ["yes", 'y']):
@@ -124,20 +125,19 @@ def start(date):
                 print("The name does not exists, try again if you misspelled or if you dont have an account create one")
                 
     weekday_value = weekday(date,working_values)
-    
+    print(weekday_value)
     if(input("Do you want to see your data graphed?") == "yes"):    
         graph(working_values,date,weekday_value)
     
     if(input("Do you want to see predictions for your day?") == "yes"):
         what_if(working_values,date,weekday_value)
-    while(working_values["previous_activity"] != ("sport" or "study" or "rest")):
+    while(working_values["previous_activity"] != "sport" and working_values["previous_activity"] != "study" and working_values["previous_activity"] != "rest"):
         print("What do you want to do first?")
-        previous_activity = input("study,sport,rest")
+        working_values["previous_activity"] = input("(study,sport,rest)")
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
-    ref.child("start").set(previous_activity)
+    ref.child("start").set(working_values["previous_activity"])
     
-    working_values["previous_activity"] = previous_activity
     return working_values
 
 def graph(working_values,date,weekday_value):
@@ -253,7 +253,7 @@ def get_data(path):
     return db.reference(path).get()
     
 def what_if(working_values,date,weekday):
-    if(input("Do you want to see what is your predicted fail based on your previus data, if you start with a specific activity?") == "yes"):
+    if(input("Do you want to see what your predicted failure is based on your previous data, if you start with a specific activity? ") == "yes"):
         activity = input("For wich activity would you like to see the prediction?(sport,study,rest)")
         
         print("Your predicted avarage fail for today starting with " +activity+ " Is: " + str(get_data(f"/{working_values['name']}/fails_avarage/{activity}_avarage")))
@@ -402,7 +402,7 @@ def done_time_avarage(times_done, working_values,date,weekday):
 
 def main():
     date = datetime.today().date().isoformat()
-    
+    print(date)
     working_values = start(date)
     
     
@@ -413,11 +413,14 @@ def main():
     
     weekday_value = weekday(date,working_values)
     
-    rest_time = today_times(remaining,date,working_values)
+    today_times(remaining,date,working_values)
     
     task_time = int(send(working_values,date))
     update(working_values,date,task_time)
     while True:
+        if(remaining < 30):
+            print("It is time to go to bed get ready for it. Good Night")
+            break
         recommended = recommend(working_values,date)
         while(working_values["previous_activity"] != ("sport" or "study" or "rest")):
             working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
@@ -428,9 +431,7 @@ def main():
         task_time = send(working_values,date)
         update(working_values,date,task_time)
 
-        if(remaining < 30):
-            print("It is time to go to bed get ready for it. Good Night")
-            break
+
     
     fails_avarage(working_values,date)
     
@@ -440,7 +441,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 
 
