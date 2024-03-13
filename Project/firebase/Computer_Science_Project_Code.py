@@ -86,7 +86,7 @@ def setup(working_values):
     ref.child("study_time").set(40)
     ref.child("sport_time").set(40)
     
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/")
+    ref = db.reference("/" +working_values["name"]+ "/succes_avarage/")
     ref.child("study").set(0)
     ref.child("study_avarage").set(0)
     ref.child("sport").set(0)
@@ -141,36 +141,36 @@ def start(date):
     return working_values
 
 def graph(working_values,date,weekday_value):
-    if(input("Do you want to see the graph of your avarage fails?") == "yes"):
-        avarage_fails_graph(working_values,date,weekday_value)
+    if(input("Do you want to see the graph of your avarage success?") == "yes"):
+        avarage_success_graph(working_values,date,weekday_value)
     if(input("Do you want to see the graph of your avarage times?") == "yes"):
         avarage_times_graph(working_values,date,weekday_value)
-    if(input("Do you want to see the graph of your past fails?") == "yes"):
-        past_fails_graph(working_values,date,weekday_value)
+    if(input("Do you want to see the graph of your past success?") == "yes"):
+        past_success_graph(working_values,date,weekday_value)
 
-def avarage_fails_graph(working_values,date,weekday_value):
+def avarage_success_graph(working_values,date,weekday_value):
     fig, ax = plt.subplots()
 
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/study_avarage")
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/study_avarage")
     study_avarage = ref.get()
     
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/sport_avarage")
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/sport_avarage")
     sport_avarage = ref.get()
     
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/rest_avarage")
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/rest_avarage")
     rest_avarage = ref.get()
 
 
 
     starting = ['study', 'sport', 'rest']
     counts = [study_avarage,sport_avarage,rest_avarage]
-    bar_labels = ["fails","fails","fails"]
+    bar_labels = ["success","success","success"]
     bar_colors = ['tab:red', 'tab:blue', 'tab:red']
 
     ax.bar(starting, counts, color=bar_colors)
 
-    ax.set_ylabel('Avarage fails per day')
-    ax.set_title('Avarage fail by starting activity')
+    ax.set_ylabel('Avarage success per day')
+    ax.set_title('Avarage success by starting activity')
 
     plt.show()
 
@@ -220,10 +220,10 @@ def avarage_times_graph(working_values,date,weekday_value):
 
     plt.show()
 
-def past_fails_graph(working_values,date,weekday_value):
+def past_success_graph(working_values,date,weekday_value):
     
     ref = db.reference(f"/{working_values['name']}/days")
-    data_key = "fails"
+    data_key = "success"
     name_data_list = get_past_data(ref, data_key)
 
     folder_names = list(name_data_list.keys())
@@ -232,8 +232,8 @@ def past_fails_graph(working_values,date,weekday_value):
     
     plt.bar(folder_names, data)
     plt.xlabel('Days')
-    plt.ylabel('fails')
-    plt.title('Fails per day')
+    plt.ylabel('success')
+    plt.title('success per day')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     plt.show()
@@ -253,10 +253,10 @@ def get_data(path):
     return db.reference(path).get()
     
 def what_if(working_values,date,weekday):
-    if(input("Do you want to see what your predicted failure is based on your previous data, if you start with a specific activity? ") == "yes"):
+    if(input("Do you want to see what your predicted success is based on your previous data, if you start with a specific activity? ") == "yes"):
         activity = input("For wich activity would you like to see the prediction?(sport,study,rest)")
         
-        print("Your predicted avarage fail for today starting with " +activity+ " Is: " + str(get_data(f"/{working_values['name']}/fails_avarage/{activity}_avarage")))
+        print("Your predicted avarage success for today starting with " +activity+ " Is: " + str(get_data(f"/{working_values['name']}/success_avarage/{activity}_avarage")))
         
         
     if(input("Do you want to see what if you did more of a specific activity, whether it would improve or not your health") == "yes"):
@@ -300,10 +300,10 @@ def update(working_values,date,task_time):
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/remaining_times/")
     ref.child(working_values["previous_activity"] + "_time").set(time)
     if(working_values["previous_activity"] != "rest"):
-        ref = db.reference("/" +working_values["name"]+"/days/"+date+"/fails/")
-        fail = ref.get()
+        ref = db.reference("/" +working_values["name"]+"/days/"+date+"/success/")
+        success = ref.get()
         ref = db.reference("/" +working_values["name"]+"/days/"+date+"/")
-        ref.child("fails").set(fail + int(rec[-1]))
+        ref.child("success").set(success + int(rec[-1]))
     
 def recommend(working_values,date):
     if(working_values["previous_activity"] == "sport"):
@@ -341,20 +341,20 @@ def weekday(date,working_values):
     ref.child("day_of_week").set(day_of_week)
     return day_of_week
     
-def fails_avarage(working_values,date):
-    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/fails")
-    fails = ref.get()
+def success_avarage(working_values,date):
+    ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/success")
+    success = ref.get()
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/start")
     start  = ref.get()
     
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/"+start)
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/"+start)
     times = ref.get()
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage/" +start+ "_avarage")
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage/" +start+ "_avarage")
     avarage = ref.get()
     
-    new_avarage = ((avarage*times)+fails)/(times+1)
-    ref = db.reference("/" +working_values["name"]+ "/fails_avarage")
+    new_avarage = ((avarage*times)+success)/(times+1)
+    ref = db.reference("/" +working_values["name"]+ "/success_avarage")
     ref.child(start).set(times+1)
     ref.child(start + "_avarage").set(new_avarage)
     
@@ -409,7 +409,7 @@ def main():
     remaining = rtime()
     
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
-    ref.child("fails").set(0)
+    ref.child("success").set(0)
     
     weekday_value = weekday(date,working_values)
     
@@ -422,7 +422,7 @@ def main():
             print("It is time to go to bed get ready for it. Good Night")
             break
         recommended = recommend(working_values,date)
-        while(working_values["previous_activity"] != ("sport" or "study" or "rest")):
+        while(working_values["previous_activity"] != "sport" and working_values["previous_activity"] != "study" and working_values["previous_activity"] != "rest"):
             working_values["previous_activity"] = str(input("What do you want to do next?, I recommend "+recommended))
 
         if(working_values["previous_activity"] == "end"):
@@ -433,7 +433,7 @@ def main():
 
 
     
-    fails_avarage(working_values,date)
+    success_avarage(working_values,date)
     
     times_done = done_time(working_values,date)
     done_time_avarage(times_done,working_values,date,weekday_value)
