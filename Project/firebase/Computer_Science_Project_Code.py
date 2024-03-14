@@ -274,7 +274,7 @@ def what_if(working_values,date,weekday):
         print("Your predicted avarage success for today starting with " +activity+ " Is: " + str(get_data(f"/{working_values['name']}/success_avarage/{activity}_avarage")))
         
         
-    if(input("Do you want to see what if you did more of a specific activity, whether it would improve or not your health") == "yes"):
+    if(input("Do you want to see what would happen if you did more of a specific activity, whether it would improve your health or not?") == "yes"):
         
         activity = input("For wich activity would you like to see the prediction?(sport,study)")
         avarage = get_data(f"/{working_values['name']}/times_avarage/{weekday}/{activity}_avarage")
