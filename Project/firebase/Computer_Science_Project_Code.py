@@ -83,8 +83,8 @@ def setup(working_values):
     ref.child("rest_time").set(rest_preference)
                 
     ref = db.reference("/" +working_values["name"]+ "/times")
-    ref.child("study_time").set(40)
-    ref.child("sport_time").set(40)
+    ref.child("study_time").set(120)
+    ref.child("sport_time").set(60)
     
     ref = db.reference("/" +working_values["name"]+ "/success_avarage/")
     ref.child("study").set(0)
@@ -130,22 +130,25 @@ def start(date):
     
     if(input("Do you want to see predictions for your day?") == "yes"):
         what_if(working_values,date,weekday_value)
+        
     while(working_values["previous_activity"] != "sport" and working_values["previous_activity"] != "study" and working_values["previous_activity"] != "rest"):
         print("What do you want to do first?")
         working_values["previous_activity"] = input("(study,sport,rest)")
-    
+        
+    print("To stop doing the activity and return to the menu, push button A on the microbit, if you want to see the remaining time until the end of the activity push button B")
     ref = db.reference("/" +working_values["name"]+ "/days/"+date+"/")
     ref.child("start").set(working_values["previous_activity"])
     
     return working_values
 
 def graph(working_values,date,weekday_value):
+    if(input("Do you want to see the graph of your past success?") == "yes"):
+        past_success_graph(working_values,date,weekday_value)
     if(input("Do you want to see the graph of your avarage success?") == "yes"):
         avarage_success_graph(working_values,date,weekday_value)
     if(input("Do you want to see the graph of your avarage times?") == "yes"):
         avarage_times_graph(working_values,date,weekday_value)
-    if(input("Do you want to see the graph of your past success?") == "yes"):
-        past_success_graph(working_values,date,weekday_value)
+
 
 def avarage_success_graph(working_values,date,weekday_value):
     fig, ax = plt.subplots()
@@ -178,8 +181,8 @@ def avarage_times_graph(working_values,date,weekday_value):
     avarage = {}
 
     for x in weekday:
-        avarage[x + "sport"] = get_data(f"/{working_values['name']}/times_avarage/{x}/sport")
-        avarage[x + "study"] = get_data(f"/{working_values['name']}/times_avarage/{x}/study")
+        avarage[x + "sport"] = get_data(f"/{working_values['name']}/times_avarage/{x}/sport_avarage")
+        avarage[x + "study"] = get_data(f"/{working_values['name']}/times_avarage/{x}/study_avarage")
 
     species = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
     sport_times = np.array([
@@ -230,6 +233,18 @@ def past_success_graph(working_values,date,weekday_value):
     if(data == [None]):
         print("there is no previous data")
     else:
+        summ = 0
+        divider = 0
+        for x in data:
+            summ += x
+            divider += 1
+        avarage = summ/divider
+        if (data[-1] > avarage):
+            print("Last day you did better then your avarage you should continue what you are doing because it is improving your performance")
+        elif (data[-1] == avarage):
+            print("Last day you did the same as your avarage you should try to change what activity you start your because it might improve your performance")
+        else:
+            print("Last day you did worse then your avarage you should try to change what activity you start your because it might improve your performance")
         plt.bar(folder_names, data)
         plt.xlabel('Days')
         plt.ylabel('success')
@@ -401,7 +416,8 @@ def done_time_avarage(times_done, working_values,date,weekday):
     
 
 def main():
-    date = datetime.today().date().isoformat()
+#     date = datetime.today().date().isoformat()
+    date = "2024-03-15"
     working_values = start(date)
     
     
